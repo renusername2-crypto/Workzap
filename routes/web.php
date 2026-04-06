@@ -7,6 +7,10 @@ use App\Http\Controllers\EmployerDashboardController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\InterviewController;
+use App\Http\Controllers\JobSeekerDashboardController;
+use App\Http\Controllers\JobSeekerBrowseController;
+use App\Http\Controllers\JobSeekerApplicationController;
+use App\Http\Controllers\JobSeekerInterviewController;
 
 // --- Guest Routes ---
 Route::middleware('guest')->group(function () {
@@ -55,4 +59,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/employer/interviews', [InterviewController::class, 'index'])->name('interviews.index');
     Route::post('/employer/interviews', [InterviewController::class, 'store'])->name('interviews.store');
     Route::put('/employer/interviews/{interview}', [InterviewController::class, 'update'])->name('interviews.update');
+});
+
+// --- Job Seeker Routes ---
+Route::middleware(['auth'])->group(function () {
+    // Job Seeker Dashboard
+    Route::get('/jobseeker/dashboard', [JobSeekerDashboardController::class, 'index'])->name('jobseeker.dashboard');
+
+    // Browse Jobs
+    Route::get('/jobseeker/jobs', [JobSeekerBrowseController::class, 'index'])->name('jobseeker.jobs');
+    Route::get('/jobseeker/jobs/{job}', [JobSeekerBrowseController::class, 'show'])->name('jobseeker.jobs.show');
+    Route::post('/jobseeker/jobs/{job}/apply', [JobSeekerBrowseController::class, 'apply'])->name('jobseeker.jobs.apply');
+
+    // My Applications
+    Route::get('/jobseeker/applications', [JobSeekerApplicationController::class, 'index'])->name('jobseeker.applications');
+
+    // My Interviews
+    Route::get('/jobseeker/interviews', [JobSeekerInterviewController::class, 'index'])->name('jobseeker.interviews');
 });
