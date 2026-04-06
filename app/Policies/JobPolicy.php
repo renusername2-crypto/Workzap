@@ -7,6 +7,11 @@ use App\Models\User;
 
 class JobPolicy
 {
+    public function create(User $user): bool
+    {
+        return $user->isEmployer();
+    }
+
     public function update(User $user, Job $job): bool
     {
         return $user->id === $job->employer_id;
@@ -17,8 +22,13 @@ class JobPolicy
         return $user->id === $job->employer_id;
     }
 
-    public function create(User $user): bool
+    public function view(User $user, Job $job): bool
     {
-        return $user->isEmployer();
+        return true;
+    }
+
+    public function viewAny(User $user): bool
+    {
+        return true;
     }
 }
