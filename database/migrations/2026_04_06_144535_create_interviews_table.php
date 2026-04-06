@@ -6,23 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('interviews', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('application_id')->constrained('applications');
+            $table->foreignId('application_id')->constrained('applications')->onDelete('cascade');
             $table->dateTime('scheduled_at');
-            $table->string('status')->default('pending'); // pending, confirmed, completed
+            $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending');
+            $table->text('notes')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('interviews');

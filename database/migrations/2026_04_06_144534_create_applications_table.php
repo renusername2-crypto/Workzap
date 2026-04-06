@@ -6,24 +6,20 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('applications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('job_id')->constrained('jobs');
-            $table->foreignId('applicant_id')->constrained('users');
-            $table->string('status')->default('applied'); // applied, screening, interview, hired, rejected
+            $table->foreignId('job_id')->constrained('jobs')->onDelete('cascade');
+            $table->foreignId('applicant_id')->constrained('users')->onDelete('cascade');
+            $table->enum('status', ['applied', 'screening', 'interview', 'hired', 'rejected'])->default('applied');
+            $table->longText('cover_letter')->nullable();
+            $table->string('resume_path')->nullable();
             $table->timestamp('applied_at')->useCurrent();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('applications');

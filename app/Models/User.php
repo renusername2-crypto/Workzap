@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -29,5 +30,20 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function jobs(): HasMany
+    {
+        return $this->hasMany(Job::class, 'employer_id');
+    }
+
+    public function applications(): HasMany
+    {
+        return $this->hasMany(Application::class, 'applicant_id');
+    }
+
+    public function isEmployer(): bool
+    {
+        return $this->role === 'employer';
     }
 }
