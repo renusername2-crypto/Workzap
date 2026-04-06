@@ -6,6 +6,7 @@ use App\Models\Job;
 use App\Models\Application;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Http\RedirectResponse;
 
 class JobSeekerBrowseController extends Controller
 {
@@ -16,8 +17,9 @@ class JobSeekerBrowseController extends Controller
             ->latest('posted_at')
             ->paginate(10);
 
-        // Get applied job IDs for current user
-        $appliedJobIds = Application::where('applicant_id', auth()->id())->pluck('job_id')->toArray();
+        $appliedJobIds = Application::where('applicant_id', auth()->id())
+            ->pluck('job_id')
+            ->toArray();
 
         return view('jobseeker.browse-jobs', [
             'jobs' => $jobs,
@@ -42,7 +44,7 @@ class JobSeekerBrowseController extends Controller
         ]);
     }
 
-    public function apply(Request $request, Job $job)
+    public function apply(Request $request, Job $job): RedirectResponse
     {
         $hasApplied = Application::where('job_id', $job->id)
             ->where('applicant_id', auth()->id())
