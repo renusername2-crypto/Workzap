@@ -6,13 +6,17 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+
+use App\Models\Job;
+use App\Models\Application;
+use App\Models\Interview;
 
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'id',
         'first_name',
         'last_name',
         'email',
@@ -33,6 +37,10 @@ class User extends Authenticatable
         ];
     }
 
+    // ======================
+    // RELATIONSHIPS
+    // ======================
+
     public function jobs(): HasMany
     {
         return $this->hasMany(Job::class, 'employer_id');
@@ -42,6 +50,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(Application::class, 'applicant_id');
     }
+
+    public function interviews(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            Interview::class,
+            Application::class,
+            'applicant_id',     // FK sa applications table
+            'application_id',   // FK sa interviews table
+            'id',               // local key sa users
+            'id'                // local key sa applications
+        );
+    }
+
+    // ======================
+    // ROLE HELPERS
+    // ======================
 
     public function isEmployer(): bool
     {
@@ -58,7 +82,11 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
-    public function getFullNameAttribute()
+    // ======================
+    // ACCESSORS
+    // ======================
+
+    public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
     }

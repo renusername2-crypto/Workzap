@@ -4,7 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+
+use App\Models\Job;
+use App\Models\User;
+use App\Models\Interview;
 
 class Application extends Model
 {
@@ -23,6 +27,10 @@ class Application extends Model
         'updated_at' => 'datetime',
     ];
 
+    // ======================
+    // RELATIONSHIPS
+    // ======================
+
     public function job(): BelongsTo
     {
         return $this->belongsTo(Job::class);
@@ -33,13 +41,8 @@ class Application extends Model
         return $this->belongsTo(User::class, 'applicant_id');
     }
 
-    public function jobseeker(): BelongsTo
+    public function interview(): HasOne
     {
-        return $this->belongsTo(User::class, 'applicant_id');
-    }
-
-    public function interviews(): HasMany
-    {
-        return $this->hasMany(Interview::class);
+        return $this->hasOne(Interview::class);
     }
 }

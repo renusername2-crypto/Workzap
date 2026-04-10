@@ -1,22 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Workzap - Admin Dashboard</title>
-</head>
+@section('title', 'Admin Dashboard')
 
-<body>
+@section('content')
+<div class="admin-dashboard">
 
     <h1>Admin Dashboard 🛠️</h1>
     <p>Welcome, {{ Auth::user()->first_name }}!</p>
 
+    <!-- Quick Links -->
+    <div style="margin-bottom: 20px;">
+        <a href="{{ route('admin.users.index') }}">Manage Users</a> |
+        <a href="{{ route('admin.jobs.index') }}">Manage Jobs</a> |
+        <a href="{{ route('admin.applications.index') }}">Manage Applications</a> |
+        <a href="{{ route('admin.interviews.index') }}">Manage Interviews</a>
+    </div>
+
+    <!-- Logout -->
     <form method="POST" action="{{ route('admin.logout') }}">
         @csrf
         <button type="submit">Logout</button>
     </form>
 
-</body>
-
-</html>
+</div>
+@endsection

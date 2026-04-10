@@ -7,6 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
+use App\Models\User;
+use App\Models\Application;
+use App\Models\Interview;
+
 class Job extends Model
 {
     protected $fillable = [
@@ -32,25 +36,29 @@ class Job extends Model
         'updated_at' => 'datetime',
     ];
 
+    // ======================
+    // RELATIONSHIPS
+    // ======================
+
     public function employer(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'employer_id');
+        return $this->belongsTo(User::class, 'employer_id');
     }
 
     public function applications(): HasMany
     {
-        return $this->hasMany(\App\Models\Application::class);
+        return $this->hasMany(Application::class);
     }
 
     public function interviews(): HasManyThrough
     {
         return $this->hasManyThrough(
-            \App\Models\Interview::class,
-            \App\Models\Application::class,
-            'job_id',          // Foreign key on the applications table...
-            'application_id',  // Foreign key on the interviews table...
-            'id',              // Local key on the jobs table...
-            'id'               // Local key on the applications table...
+            Interview::class,
+            Application::class,
+            'job_id',          // FK sa applications
+            'application_id',  // FK sa interviews
+            'id',              // PK sa jobs
+            'id'               // PK sa applications
         );
     }
 }

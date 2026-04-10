@@ -4,6 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
+
+use App\Models\Application;
+use App\Models\Job;
+use App\Models\User;
 
 class Interview extends Model
 {
@@ -21,18 +26,38 @@ class Interview extends Model
         'updated_at' => 'datetime',
     ];
 
+    // ======================
+    // RELATIONSHIPS
+    // ======================
+
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
     }
 
-    public function job()
+    // Job via Application
+    public function job(): HasOneThrough
     {
-        return $this->application->job;
+        return $this->hasOneThrough(
+            Job::class,
+            Application::class,
+            'id',          // PK sa applications
+            'id',          // PK sa jobs
+            'application_id', // FK sa interviews
+            'job_id'       // FK sa applications
+        );
     }
 
-    public function jobseeker()
+    // Jobseeker via Application
+    public function applicant(): HasOneThrough
     {
-        return $this->application->jobseeker;
+        return $this->hasOneThrough(
+            User::class,
+            Application::class,
+            'id',
+            'id',
+            'application_id',
+            'applicant_id'
+        );
     }
 }
