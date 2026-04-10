@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
-use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,7 +12,7 @@ class ApplicationController extends Controller
     {
         $applications = Application::whereHas('job', function ($query) {
             $query->where('employer_id', Auth::id());
-        })->with('jobseeker', 'job')->orderBy('created_at', 'desc')->paginate(10);
+        })->with(['jobseeker', 'job'])->orderBy('created_at', 'desc')->paginate(10);
 
         return view('employer.applications.index', ['applications' => $applications]);
     }
@@ -21,6 +20,8 @@ class ApplicationController extends Controller
     public function show(Application $application)
     {
         $this->authorize('view', $application);
+        $application->load(['jobseeker', 'job']); // Ensure relations loaded
+
         return view('employer.applications.show', ['application' => $application]);
     }
 

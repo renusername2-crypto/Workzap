@@ -34,7 +34,7 @@ class JobController extends Controller
 
         $validated['employer_id'] = Auth::id();
         $validated['status'] = 'draft';
-        $validated['job_type'] = $request->employment_type;
+        $validated['job_type'] = $validated['employment_type'];
 
         Job::create($validated);
 
@@ -68,7 +68,7 @@ class JobController extends Controller
             'benefits' => 'nullable|string',
         ]);
 
-        $validated['job_type'] = $request->employment_type;
+        $validated['job_type'] = $validated['employment_type'];
         $job->update($validated);
 
         return redirect()->route('employer.jobs.index')->with('success', 'Job posting updated successfully!');

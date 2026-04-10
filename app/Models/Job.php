@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Job extends Model
 {
@@ -33,16 +34,23 @@ class Job extends Model
 
     public function employer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'employer_id');
+        return $this->belongsTo(\App\Models\User::class, 'employer_id');
     }
 
     public function applications(): HasMany
     {
-        return $this->hasMany(Application::class);
+        return $this->hasMany(\App\Models\Application::class);
     }
 
-    public function interviews(): HasMany
+    public function interviews(): HasManyThrough
     {
-        return $this->hasManyThrough(Interview::class, Application::class);
+        return $this->hasManyThrough(
+            \App\Models\Interview::class,
+            \App\Models\Application::class,
+            'job_id',          // Foreign key on the applications table...
+            'application_id',  // Foreign key on the interviews table...
+            'id',              // Local key on the jobs table...
+            'id'               // Local key on the applications table...
+        );
     }
 }

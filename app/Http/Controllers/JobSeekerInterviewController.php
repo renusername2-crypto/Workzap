@@ -12,7 +12,7 @@ class JobSeekerInterviewController extends Controller
     {
         $interviews = Interview::whereHas('application', function ($query) {
             $query->where('applicant_id', Auth::id());
-        })->with('application', 'job')->get();
+        })->with(['application', 'application.job'])->get();
 
         return view('jobseeker.interviews', ['interviews' => $interviews]);
     }

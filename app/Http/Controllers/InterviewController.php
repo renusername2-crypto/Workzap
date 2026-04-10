@@ -13,7 +13,7 @@ class InterviewController extends Controller
     {
         $interviews = Interview::whereHas('application.job', function ($query) {
             $query->where('employer_id', Auth::id());
-        })->with('application.job', 'application.jobseeker')->get();
+        })->with(['application.job', 'application.jobseeker'])->get();
 
         return view('employer.interviews.index', ['interviews' => $interviews]);
     }
@@ -22,7 +22,7 @@ class InterviewController extends Controller
     {
         $applications = Application::whereHas('job', function ($query) {
             $query->where('employer_id', Auth::id());
-        })->with('jobseeker', 'job')->get();
+        })->with(['jobseeker', 'job'])->get();
 
         return view('employer.interviews.create', ['applications' => $applications]);
     }
@@ -44,6 +44,7 @@ class InterviewController extends Controller
     public function edit(Interview $interview)
     {
         $this->authorize('update', $interview);
+        $interview->load(['application.job', 'application.jobseeker']);
         return view('employer.interviews.edit', ['interview' => $interview]);
     }
 

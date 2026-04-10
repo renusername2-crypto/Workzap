@@ -11,7 +11,7 @@ class JobSeekerApplicationController extends Controller
     public function index()
     {
         $applications = Application::where('applicant_id', Auth::id())
-            ->with('job', 'job.employer')
+            ->with(['job', 'job.employer'])
             ->paginate(10);
 
         return view('jobseeker.applications', ['applications' => $applications]);
@@ -20,6 +20,8 @@ class JobSeekerApplicationController extends Controller
     public function show(Application $application)
     {
         $this->authorize('view', $application);
+        $application->load(['job', 'job.employer']); // Ensure relationships are loaded
+
         return view('jobseeker.applications.show', ['application' => $application]);
     }
 
@@ -27,6 +29,7 @@ class JobSeekerApplicationController extends Controller
     {
         $this->authorize('delete', $application);
         $application->delete();
+
         return redirect()->back()->with('success', 'Application withdrawn!');
     }
 }
