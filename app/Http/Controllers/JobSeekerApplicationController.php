@@ -3,29 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class JobSeekerApplicationController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $applications = Application::where('applicant_id', auth()->id())
-            ->with('job', 'interviews')
-            ->latest('applied_at')
+        $applications = Application::where('applicant_id', Auth::id())
+            ->with('job', 'job.employer')
             ->paginate(10);
 
-        $statusCounts = [
-            'all' => Application::where('applicant_id', auth()->id())->count(),
-            'applied' => Application::where('applicant_id', auth()->id())->where('status', 'applied')->count(),
-            'screening' => Application::where('applicant_id', auth()->id())->where('status', 'screening')->count(),
-            'interview' => Application::where('applicant_id', auth()->id())->where('status', 'interview')->count(),
-            'hired' => Application::where('applicant_id', auth()->id())->where('status', 'hired')->count(),
-            'rejected' => Application::where('applicant_id', auth()->id())->where('status', 'rejected')->count(),
-        ];
+        return view('jobseeker.applications', ['applications' => $applications]);
+    }
 
-        return view('jobseeker.applications', [
-            'applications' => $applications,
-            'statusCounts' => $statusCounts,
-        ]);
+    public function show(Application $application)
+    {
+        $this->authorize('view', $application);
+        return view('jobseeker.applications.show', ['application' => $application]);
+    }
+
+    public function withdraw(Application $application)
+    {
+        $this->authorize('delete', $application);
+        $application->delete();
+        return redirect()->back()->with('success', 'Application withdrawn!');
     }
 }

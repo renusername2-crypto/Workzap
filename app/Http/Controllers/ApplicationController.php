@@ -3,54 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\Job;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class ApplicationController extends Controller
 {
-    public function index(): View
+    public function index()
     {
         $applications = Application::whereHas('job', function ($query) {
-            $query->where('employer_id', auth()->id());
-        })
-            ->with('applicant', 'job', 'interviews')
-            ->latest()
-            ->paginate(10);
+            $query->where('employer_id', Auth::id());
+        })->with('jobseeker', 'job')->orderBy('created_at', 'desc')->paginate(10);
 
-        $statusCounts = [
-            'all' => Application::whereHas('job', function ($query) {
-                $query->where('employer_id', auth()->id());
-            })->count(),
-            'applied' => Application::whereHas('job', function ($query) {
-                $query->where('employer_id', auth()->id());
-            })->where('status', 'applied')->count(),
-            'screening' => Application::whereHas('job', function ($query) {
-                $query->where('employer_id', auth()->id());
-            })->where('status', 'screening')->count(),
-            'interview' => Application::whereHas('job', function ($query) {
-                $query->where('employer_id', auth()->id());
-            })->where('status', 'interview')->count(),
-            'hired' => Application::whereHas('job', function ($query) {
-                $query->where('employer_id', auth()->id());
-            })->where('status', 'hired')->count(),
-            'rejected' => Application::whereHas('job', function ($query) {
-                $query->where('employer_id', auth()->id());
-            })->where('status', 'rejected')->count(),
-        ];
-
-        return view('employer.applications.index', [
-            'applications' => $applications,
-            'statusCounts' => $statusCounts,
-        ]);
+        return view('employer.applications.index', ['applications' => $applications]);
     }
 
-    public function update(Request $request, Application $application): RedirectResponse
+    public function show(Application $application)
+    {
+        $this->authorize('view', $application);
+        return view('employer.applications.show', ['application' => $application]);
+    }
+
+    public function update(Request $request, Application $application)
     {
         $this->authorize('update', $application);
 
         $validated = $request->validate([
-            'status' => 'required|string|in:applied,screening,interview,hired,rejected',
+            'status' => 'required|in:applied,screening,interview,hired,rejected',
         ]);
 
         $application->update($validated);

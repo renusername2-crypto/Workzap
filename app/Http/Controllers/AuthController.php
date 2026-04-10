@@ -33,7 +33,15 @@ class AuthController extends Controller
             }
 
             $request->session()->regenerate();
-            return redirect()->route('dashboard');
+
+            // Redirect based on user role
+            if ($user->role === 'employer') {
+                return redirect()->route('employer.dashboard');
+            } elseif ($user->role === 'jobseeker') {
+                return redirect()->route('jobseeker.dashboard');
+            }
+
+            return redirect()->route('login');
         }
 
         return back()->withErrors(['email' => 'Invalid credentials.'])->withInput();

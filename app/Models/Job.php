@@ -14,8 +14,13 @@ class Job extends Model
         'description',
         'location',
         'job_type',
+        'employment_type',
         'salary',
+        'salary_min',
+        'salary_max',
         'status',
+        'requirements',
+        'benefits',
         'applicants_count',
         'posted_at'
     ];
@@ -36,13 +41,8 @@ class Job extends Model
         return $this->hasMany(Application::class);
     }
 
-    public function activeApplications(): HasMany
+    public function interviews(): HasMany
     {
-        return $this->hasMany(Application::class)->where('status', '!=', 'rejected');
-    }
-
-    public function interviewApplications(): HasMany
-    {
-        return $this->hasMany(Application::class)->where('status', 'interview');
+        return $this->hasManyThrough(Interview::class, Application::class);
     }
 }

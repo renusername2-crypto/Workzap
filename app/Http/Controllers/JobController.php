@@ -4,104 +4,94 @@ namespace App\Http\Controllers;
 
 use App\Models\Job;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class JobController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $jobs = Job::where('employer_id', auth()->id())
-            ->with('applications')
-            ->latest()
-            ->paginate(10);
-
+        $jobs = Job::where('employer_id', Auth::id())->paginate(10);
         return view('employer.jobs.index', ['jobs' => $jobs]);
     }
 
-    public function create(): View
+    public function create()
     {
         return view('employer.jobs.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'employment_type' => 'required|in:full-time,part-time,contract,temporary',
             'location' => 'required|string|max:255',
-            'job_type' => 'required|string|in:Full-time,Part-time,Contract,Freelance',
-            'salary' => 'nullable|string|max:255',
+            'salary_min' => 'nullable|numeric|min:0',
+            'salary_max' => 'nullable|numeric|min:0',
+            'description' => 'required|string',
+            'requirements' => 'required|string',
+            'benefits' => 'nullable|string',
         ]);
 
-        Job::create([
-            'employer_id' => auth()->id(),
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'location' => $validated['location'],
-            'job_type' => $validated['job_type'],
-            'salary' => $validated['salary'],
-            'status' => 'draft',
-        ]);
+        $validated['employer_id'] = Auth::id();
+        $validated['status'] = 'draft';
+        $validated['job_type'] = $request->employment_type;
 
-        return redirect()->route('jobs.index')->with('success', 'Job posting created successfully!');
+        Job::create($validated);
+
+        return redirect()->route('employer.jobs.index')->with('success', 'Job posting created successfully!');
     }
 
-    public function edit(Job $job): View
+    public function show(Job $job)
+    {
+        $this->authorize('view', $job);
+        return view('employer.jobs.show', ['job' => $job]);
+    }
+
+    public function edit(Job $job)
     {
         $this->authorize('update', $job);
         return view('employer.jobs.edit', ['job' => $job]);
     }
 
-    public function update(Request $request, Job $job): RedirectResponse
+    public function update(Request $request, Job $job)
     {
         $this->authorize('update', $job);
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'employment_type' => 'required|in:full-time,part-time,contract,temporary',
             'location' => 'required|string|max:255',
-            'job_type' => 'required|string|in:Full-time,Part-time,Contract,Freelance',
-            'salary' => 'nullable|string|max:255',
-            'status' => 'required|string|in:draft,active,closed',
+            'salary_min' => 'nullable|numeric|min:0',
+            'salary_max' => 'nullable|numeric|min:0',
+            'description' => 'required|string',
+            'requirements' => 'required|string',
+            'benefits' => 'nullable|string',
         ]);
 
+        $validated['job_type'] = $request->employment_type;
         $job->update($validated);
 
-        if ($request->input('status') === 'active' && $job->posted_at === null) {
-            $job->update(['posted_at' => now()]);
-        }
-
-        return redirect()->route('jobs.index')->with('success', 'Job posting updated successfully!');
+        return redirect()->route('employer.jobs.index')->with('success', 'Job posting updated successfully!');
     }
 
-    public function publish(Job $job): RedirectResponse
+    public function publish(Job $job)
     {
         $this->authorize('update', $job);
-
-        $job->update([
-            'status' => 'active',
-            'posted_at' => now(),
-        ]);
-
-        return redirect()->back()->with('success', 'Job posting published!');
+        $job->update(['status' => 'active']);
+        return redirect()->route('employer.jobs.index')->with('success', 'Job posted successfully!');
     }
 
-    public function close(Job $job): RedirectResponse
+    public function close(Job $job)
     {
         $this->authorize('update', $job);
-
         $job->update(['status' => 'closed']);
-
-        return redirect()->back()->with('success', 'Job posting closed!');
+        return redirect()->route('employer.jobs.index')->with('success', 'Job posting closed!');
     }
 
-    public function destroy(Job $job): RedirectResponse
+    public function destroy(Job $job)
     {
         $this->authorize('delete', $job);
-
         $job->delete();
-
-        return redirect()->route('jobs.index')->with('success', 'Job posting deleted!');
+        return redirect()->route('employer.jobs.index')->with('success', 'Job posting deleted!');
     }
 }

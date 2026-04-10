@@ -2,56 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Application;
-use App\Models\Job;
-use App\Models\Interview;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class JobSeekerDashboardController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
-        $totalApplications = Application::where('applicant_id', $user->id)->count();
-        $applicationsInProgress = Application::where('applicant_id', $user->id)
-            ->whereIn('status', ['screening', 'interview'])
-            ->count();
-        $totalInterviews = Interview::whereHas('application', function ($query) {
-            $query->where('applicant_id', auth()->id());
-        })->count();
-        $interviewsTomorrow = Interview::whereHas('application', function ($query) {
-            $query->where('applicant_id', auth()->id());
-        })->whereDate('scheduled_at', today()->addDay())->count();
+        // Data for dashboard
+        $data = [
+            'totalApplications' => 12,
+            'pendingApplications' => 3,
+            'interviewsScheduled' => 2,
+            'upcomingInterviews' => 1,
+            'savedJobs' => 8,
+        ];
 
-        $recentApplications = Application::where('applicant_id', $user->id)
-            ->with('job')
-            ->latest('applied_at')
-            ->take(5)
-            ->get();
+        return view('jobseeker.dashboard', $data);
+    }
 
-        $recommendedJobs = Job::where('status', 'active')
-            ->whereNotIn('id', Application::where('applicant_id', $user->id)->pluck('job_id'))
-            ->inRandomOrder()
-            ->take(4)
-            ->get();
-
-        $upcomingInterviews = Interview::whereHas('application', function ($query) {
-            $query->where('applicant_id', auth()->id());
-        })
-            ->where('scheduled_at', '>=', now())
-            ->orderBy('scheduled_at')
-            ->take(5)
-            ->get();
-
-        return view('jobseeker.dashboard', [
-            'totalApplications' => $totalApplications,
-            'applicationsInProgress' => $applicationsInProgress,
-            'totalInterviews' => $totalInterviews,
-            'interviewsTomorrow' => $interviewsTomorrow,
-            'recentApplications' => $recentApplications,
-            'recommendedJobs' => $recommendedJobs,
-            'upcomingInterviews' => $upcomingInterviews,
-        ]);
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('jobseeker.profile', ['user' => $user]);
     }
 }

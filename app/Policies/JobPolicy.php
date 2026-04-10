@@ -7,9 +7,9 @@ use App\Models\User;
 
 class JobPolicy
 {
-    public function create(User $user): bool
+    public function view(User $user, Job $job): bool
     {
-        return $user->isEmployer();
+        return $user->id === $job->employer_id;
     }
 
     public function update(User $user, Job $job): bool
@@ -20,15 +20,5 @@ class JobPolicy
     public function delete(User $user, Job $job): bool
     {
         return $user->id === $job->employer_id;
-    }
-
-    public function view(User $user, Job $job): bool
-    {
-        return true;
-    }
-
-    public function viewAny(User $user): bool
-    {
-        return true;
     }
 }

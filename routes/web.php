@@ -26,7 +26,6 @@ Route::post('/admin', [AdminController::class, 'login'])->name('admin.login.post
 
 // --- Authenticated User Routes ---
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', fn() => view('dashboard'))->name('dashboard');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
@@ -37,43 +36,58 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 });
 
 // --- Employer Dashboard Routes ---
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->prefix('employer')->group(function () {
     // Employer Dashboard
-    Route::get('/employer/dashboard', [EmployerDashboardController::class, 'index'])->name('employer.dashboard');
+    Route::get('/dashboard', [EmployerDashboardController::class, 'index'])->name('employer.dashboard');
 
     // Jobs
-    Route::get('/employer/jobs', [JobController::class, 'index'])->name('jobs.index');
-    Route::get('/employer/jobs/create', [JobController::class, 'create'])->name('jobs.create');
-    Route::post('/employer/jobs', [JobController::class, 'store'])->name('jobs.store');
-    Route::get('/employer/jobs/{job}/edit', [JobController::class, 'edit'])->name('jobs.edit');
-    Route::put('/employer/jobs/{job}', [JobController::class, 'update'])->name('jobs.update');
-    Route::post('/employer/jobs/{job}/publish', [JobController::class, 'publish'])->name('jobs.publish');
-    Route::post('/employer/jobs/{job}/close', [JobController::class, 'close'])->name('jobs.close');
-    Route::delete('/employer/jobs/{job}', [JobController::class, 'destroy'])->name('jobs.destroy');
+    Route::get('/jobs', [JobController::class, 'index'])->name('employer.jobs.index');
+    Route::get('/jobs/create', [JobController::class, 'create'])->name('employer.jobs.create');
+    Route::post('/jobs', [JobController::class, 'store'])->name('employer.jobs.store');
+    Route::get('/jobs/{job}', [JobController::class, 'show'])->name('employer.jobs.show');
+    Route::get('/jobs/{job}/edit', [JobController::class, 'edit'])->name('employer.jobs.edit');
+    Route::put('/jobs/{job}', [JobController::class, 'update'])->name('employer.jobs.update');
+    Route::post('/jobs/{job}/publish', [JobController::class, 'publish'])->name('employer.jobs.publish');
+    Route::post('/jobs/{job}/close', [JobController::class, 'close'])->name('employer.jobs.close');
+    Route::delete('/jobs/{job}', [JobController::class, 'destroy'])->name('employer.jobs.destroy');
 
     // Applications
-    Route::get('/employer/applications', [ApplicationController::class, 'index'])->name('applications.index');
-    Route::put('/employer/applications/{application}', [ApplicationController::class, 'update'])->name('applications.update');
+    Route::get('/applications', [ApplicationController::class, 'index'])->name('employer.applications.index');
+    Route::get('/applications/{application}', [ApplicationController::class, 'show'])->name('employer.applications.show');
+    Route::put('/applications/{application}', [ApplicationController::class, 'update'])->name('employer.applications.update');
 
     // Interviews
-    Route::get('/employer/interviews', [InterviewController::class, 'index'])->name('interviews.index');
-    Route::post('/employer/interviews', [InterviewController::class, 'store'])->name('interviews.store');
-    Route::put('/employer/interviews/{interview}', [InterviewController::class, 'update'])->name('interviews.update');
+    Route::get('/interviews', [InterviewController::class, 'index'])->name('employer.interviews.index');
+    Route::get('/interviews/create', [InterviewController::class, 'create'])->name('employer.interviews.create');
+    Route::post('/interviews', [InterviewController::class, 'store'])->name('employer.interviews.store');
+    Route::get('/interviews/{interview}/edit', [InterviewController::class, 'edit'])->name('employer.interviews.edit');
+    Route::put('/interviews/{interview}', [InterviewController::class, 'update'])->name('employer.interviews.update');
+    Route::post('/interviews/{interview}/cancel', [InterviewController::class, 'cancel'])->name('employer.interviews.cancel');
+
+    // Profile
+    Route::get('/profile', [EmployerDashboardController::class, 'profile'])->name('employer.profile');
 });
 
 // --- Job Seeker Routes ---
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth'])->prefix('jobseeker')->group(function () {
     // Job Seeker Dashboard
-    Route::get('/jobseeker/dashboard', [JobSeekerDashboardController::class, 'index'])->name('jobseeker.dashboard');
+    Route::get('/dashboard', [JobSeekerDashboardController::class, 'index'])->name('jobseeker.dashboard');
 
     // Browse Jobs
-    Route::get('/jobseeker/jobs', [JobSeekerBrowseController::class, 'index'])->name('jobseeker.jobs');
-    Route::get('/jobseeker/jobs/{job}', [JobSeekerBrowseController::class, 'show'])->name('jobseeker.jobs.show');
-    Route::post('/jobseeker/jobs/{job}/apply', [JobSeekerBrowseController::class, 'apply'])->name('jobseeker.jobs.apply');
+    Route::get('/jobs', [JobSeekerBrowseController::class, 'index'])->name('jobseeker.browse-jobs');
+    Route::get('/jobs/{job}', [JobSeekerBrowseController::class, 'show'])->name('jobseeker.job-detail');
+    Route::post('/jobs/{job}/apply', [JobSeekerBrowseController::class, 'apply'])->name('jobseeker.apply');
 
     // My Applications
-    Route::get('/jobseeker/applications', [JobSeekerApplicationController::class, 'index'])->name('jobseeker.applications');
+    Route::get('/applications', [JobSeekerApplicationController::class, 'index'])->name('jobseeker.applications');
+    Route::get('/applications/{application}', [JobSeekerApplicationController::class, 'show'])->name('jobseeker.applications.show');
+    Route::post('/applications/{application}/withdraw', [JobSeekerApplicationController::class, 'withdraw'])->name('jobseeker.applications.withdraw');
 
     // My Interviews
-    Route::get('/jobseeker/interviews', [JobSeekerInterviewController::class, 'index'])->name('jobseeker.interviews');
+    Route::get('/interviews', [JobSeekerInterviewController::class, 'index'])->name('jobseeker.interviews');
+    Route::post('/interviews/{interview}/accept', [JobSeekerInterviewController::class, 'accept'])->name('jobseeker.interviews.accept');
+    Route::post('/interviews/{interview}/decline', [JobSeekerInterviewController::class, 'decline'])->name('jobseeker.interviews.decline');
+
+    // Profile
+    Route::get('/profile', [JobSeekerDashboardController::class, 'profile'])->name('jobseeker.profile');
 });

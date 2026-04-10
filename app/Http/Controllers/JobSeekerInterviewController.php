@@ -3,30 +3,31 @@
 namespace App\Http\Controllers;
 
 use App\Models\Interview;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class JobSeekerInterviewController extends Controller
 {
-    public function index(): View
+    public function index()
     {
         $interviews = Interview::whereHas('application', function ($query) {
-            $query->where('applicant_id', auth()->id());
-        })
-            ->with('application.job', 'application.applicant')
-            ->latest('scheduled_at')
-            ->paginate(10);
+            $query->where('applicant_id', Auth::id());
+        })->with('application', 'job')->get();
 
-        $upcomingInterviews = Interview::whereHas('application', function ($query) {
-            $query->where('applicant_id', auth()->id());
-        })
-            ->where('scheduled_at', '>=', now())
-            ->orderBy('scheduled_at')
-            ->take(5)
-            ->get();
+        return view('jobseeker.interviews', ['interviews' => $interviews]);
+    }
 
-        return view('jobseeker.interviews', [
-            'interviews' => $interviews,
-            'upcomingInterviews' => $upcomingInterviews,
-        ]);
+    public function accept(Interview $interview)
+    {
+        $this->authorize('update', $interview);
+        $interview->update(['status' => 'confirmed']);
+        return redirect()->back()->with('success', 'Interview confirmed!');
+    }
+
+    public function decline(Interview $interview)
+    {
+        $this->authorize('update', $interview);
+        $interview->delete();
+        return redirect()->back()->with('success', 'Interview declined!');
     }
 }

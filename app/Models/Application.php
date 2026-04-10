@@ -33,6 +33,11 @@ class Application extends Model
         return $this->belongsTo(User::class, 'applicant_id');
     }
 
+    public function jobseeker(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'applicant_id');
+    }
+
     public function interviews(): HasMany
     {
         return $this->hasMany(Interview::class);

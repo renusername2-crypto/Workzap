@@ -5,64 +5,37 @@ namespace App\Http\Controllers;
 use App\Models\Job;
 use App\Models\Application;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
 
 class JobSeekerBrowseController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $jobs = Job::where('status', 'active')
-            ->with('employer')
-            ->latest('posted_at')
-            ->paginate(10);
-
-        $appliedJobIds = Application::where('applicant_id', auth()->id())
-            ->pluck('job_id')
-            ->toArray();
-
-        return view('jobseeker.browse-jobs', [
-            'jobs' => $jobs,
-            'appliedJobIds' => $appliedJobIds,
-        ]);
+        $jobs = Job::where('status', 'published')->paginate(12);
+        return view('jobseeker.browse-jobs', ['jobs' => $jobs]);
     }
 
-    public function show(Job $job): View
+    public function show(Job $job)
     {
-        $hasApplied = Application::where('job_id', $job->id)
-            ->where('applicant_id', auth()->id())
-            ->exists();
+        return view('jobseeker.job-detail', ['job' => $job]);
+    }
 
-        $application = Application::where('job_id', $job->id)
-            ->where('applicant_id', auth()->id())
+    public function apply(Request $request, Job $job)
+    {
+        $existingApplication = Application::where('job_id', $job->id)
+            ->where('applicant_id', Auth::id())
             ->first();
 
-        return view('jobseeker.job-detail', [
-            'job' => $job,
-            'hasApplied' => $hasApplied,
-            'application' => $application,
-        ]);
-    }
-
-    public function apply(Request $request, Job $job): RedirectResponse
-    {
-        $hasApplied = Application::where('job_id', $job->id)
-            ->where('applicant_id', auth()->id())
-            ->exists();
-
-        if ($hasApplied) {
-            return back()->with('error', 'You have already applied to this job.');
+        if ($existingApplication) {
+            return redirect()->back()->withErrors('You have already applied for this job!');
         }
 
         Application::create([
             'job_id' => $job->id,
-            'applicant_id' => auth()->id(),
-            'status' => 'applied',
-            'cover_letter' => $request->input('cover_letter'),
+            'applicant_id' => Auth::id(),
+            'status' => 'pending',
         ]);
 
-        $job->increment('applicants_count');
-
-        return back()->with('success', 'Application submitted successfully!');
+        return redirect()->back()->with('success', 'Application submitted successfully!');
     }
 }

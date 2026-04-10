@@ -10,6 +10,7 @@ class Interview extends Model
     protected $fillable = [
         'application_id',
         'scheduled_at',
+        'location',
         'status',
         'notes'
     ];
@@ -23,5 +24,15 @@ class Interview extends Model
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class);
+    }
+
+    public function job()
+    {
+        return $this->application->job;
+    }
+
+    public function jobseeker()
+    {
+        return $this->application->jobseeker;
     }
 }

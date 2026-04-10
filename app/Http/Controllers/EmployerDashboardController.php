@@ -2,63 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Job;
-use App\Models\Application;
-use App\Models\Interview;
-use Illuminate\View\View;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class EmployerDashboardController extends Controller
 {
-    public function index(): View
+    public function index()
     {
-        $employer = auth()->user();
+        $user = Auth::user();
 
-        $totalJobs = Job::where('employer_id', $employer->id)->count();
-        $activeJobs = Job::where('employer_id', $employer->id)
-            ->where('status', 'active')
-            ->count();
+        // Data for dashboard
+        $data = [
+            'jobPostings' => 6,
+            'activeJobs' => 4,
+            'totalApplicants' => 34,
+            'newApplicants' => 5,
+            'interviewsToday' => 3,
+            'pendingInterviews' => 1,
+        ];
 
-        $totalApplicants = Application::whereHas('job', function ($query) {
-            $query->where('employer_id', auth()->id());
-        })->count();
+        return view('employer.dashboard', $data);
+    }
 
-        $applicantsToday = Application::whereHas('job', function ($query) {
-            $query->where('employer_id', auth()->id());
-        })->whereDate('applied_at', today())->count();
-
-        $interviewsToday = Interview::whereHas('application', function ($query) {
-            $query->whereHas('job', function ($jobQuery) {
-                $jobQuery->where('employer_id', auth()->id());
-            });
-        })->whereDate('scheduled_at', today())->count();
-
-        $pendingInterviews = Interview::whereHas('application', function ($query) {
-            $query->whereHas('job', function ($jobQuery) {
-                $jobQuery->where('employer_id', auth()->id());
-            });
-        })->where('status', 'pending')->count();
-
-        $recentApplicants = Application::whereHas('job', function ($query) {
-            $query->where('employer_id', auth()->id());
-        })->with('applicant', 'job')
-            ->latest('applied_at')
-            ->take(5)
-            ->get();
-
-        $latestJobs = Job::where('employer_id', $employer->id)
-            ->latest('created_at')
-            ->take(5)
-            ->get();
-
-        return view('employer.dashboard', [
-            'totalJobs' => $totalJobs,
-            'activeJobs' => $activeJobs,
-            'totalApplicants' => $totalApplicants,
-            'applicantsToday' => $applicantsToday,
-            'interviewsToday' => $interviewsToday,
-            'pendingInterviews' => $pendingInterviews,
-            'recentApplicants' => $recentApplicants,
-            'latestJobs' => $latestJobs,
-        ]);
+    public function profile()
+    {
+        $user = Auth::user();
+        return view('employer.profile', ['user' => $user]);
     }
 }
