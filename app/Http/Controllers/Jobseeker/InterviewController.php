@@ -1,24 +1,35 @@
 <?php
 
-namespace App\Http\Controllers\Jobseeker;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Interview;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Models\Job;
 
-class InterviewController extends Controller
+class InterviewController
 {
-    public function index()
+    // Other existing methods...
+
+    public function accept(Request $request, $id)
     {
-        $interviews = Interview::whereHas('application', function ($q) {
-            $q->where('applicant_id', Auth::id());
-        })->with('application.job')->paginate(10);
-        return view('jobseeker.interviews.index', compact('interviews'));
+        // Logic for accepting the interview
+        $interview = Job::find($id);
+        if ($interview) {
+            $interview->status = 'accepted';
+            $interview->save();
+            return response()->json(['message' => 'Interview Accepted!'], 200);
+        }
+        return response()->json(['message' => 'Interview Not Found!'], 404);
     }
 
-    public function show(Interview $interview)
+    public function decline(Request $request, $id)
     {
-        $this->authorize('view', $interview);
-        return view('jobseeker.interviews.show', compact('interview'));
+        // Logic for declining the interview
+        $interview = Job::find($id);
+        if ($interview) {
+            $interview->status = 'declined';
+            $interview->save();
+            return response()->json(['message' => 'Interview Declined!'], 200);
+        }
+        return response()->json(['message' => 'Interview Not Found!'], 404);
     }
 }

@@ -11,5 +11,6 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         // ... other middleware ...
         'role' => \App\Http\Middleware\RoleMiddleware::class,
+
     ];
 }
